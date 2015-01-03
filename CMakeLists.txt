@@ -63,15 +63,6 @@ find_package(Gnuradio "3.7.2" REQUIRED)
 ########################################################################
 
 
-#find_package(LibOsmoSDR)
-#find_package(LibRTLSDR)
-#find_package(LibMiriSDR)
-find_package(GrOsmoSDR)
-find_package(LibHackRF)
-find_package(LibDSD)
-#find_package(LibbladeRF)
-
-
 if(NOT GNURADIO_RUNTIME_FOUND)
     message(FATAL_ERROR "GnuRadio Runtime required to build " ${CMAKE_PROJECT_NAME})
 endif()
@@ -114,9 +105,6 @@ endif()
 ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
 
 
-
-
-
 ########################################################################
 # Setup the include and linker paths
 ########################################################################
@@ -140,5 +128,6 @@ link_directories(
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
 
-add_executable(smartnet smartnet.cc smartnet_crc.cc smartnet_deinterleave.cc logging_receiver_dsd.cc talkgroup.cc)
-target_link_libraries(smartnet  ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_PMT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} ${GNURADIO_DIGITAL_LIBRARIES} ${GNURADIO_ANALOG_LIBRARIES} ${GNURADIO_AUDIO_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GROSMOSDR_LIBRARIES} ${Boost_LIBRARIES} ${LIBDSD_LIBRARIES} itpp ncurses menu)
+#
+add_executable(smartnet smartnet.cc  logging_receiver_dsd.cc)
+target_link_libraries(smartnet  ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_PMT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} ${GNURADIO_DIGITAL_LIBRARIES} ${GNURADIO_ANALOG_LIBRARIES} ${GNURADIO_AUDIO_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES}  ${Boost_LIBRARIES} itpp )
