@@ -103,14 +103,8 @@ void init_loggers(long samp_rate) {
 void monkey(){ //const boost::system::error_code&) {
 	int logger_num = rand() % max_loggers;
 
-	if (loggers[logger_num]->is_active()) {
-		loggers[logger_num]->deactivate();
-		num_loggers--;
-	} else {
-		num_loggers++;
-		recording_num++;
-		loggers[logger_num]->activate(recording_num);
-	}
+	loggers[logger_num]->lock_cycle();
+
 }
 
 int main(int argc, char **argv)

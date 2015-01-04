@@ -42,35 +42,16 @@ protected:
 
 public:
     ~recorder();
-	void tune_offset(float f);
-	void activate( int num);
+    void lock_cycle();
 
-	void deactivate();
-	float get_freq();
-	long get_talkgroup();
-	bool is_active();
-	int lastupdate();
-	long elapsed();
-	void close();
-	void mute();
-	void unmute();
-	char *get_filename();
-	//void forecast(int noutput_items, gr_vector_int &ninput_items_required);
-	static bool logging;
 private:
-	float center, freq;
-	bool muted;
-	long talkgroup;
+	
   long samp_rate;
 	time_t timestamp;
 	time_t starttime;
 	char filename[160];
-  char status_filename[160];
   char raw_filename[160];
 	int num;
-
-	bool iam_logging;
-	bool active;
 
 
     /* GR blocks */
@@ -78,8 +59,6 @@ private:
 	gr::blocks::wavfile_sink::sptr wav_sink;
 	gr::blocks::file_sink::sptr raw_sink;
 	gr::blocks::null_sink::sptr null_sink;
-	gr::blocks::head::sptr head_source;
-	//gr_kludge_copy_sptr copier;
 
 };
 
