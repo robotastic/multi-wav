@@ -53,72 +53,33 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/intrusive_ptr.hpp>
-#include <boost/asio.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/message.h>
-#include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/gr_complex.h>
 
 #include <gnuradio/top_block.h>
-#include <gnuradio/blocks/multiply_cc.h>
-
-#include <gnuradio/filter/freq_xlating_fir_filter_ccf.h>
-#include <gnuradio/filter/firdes.h>
-#include <gnuradio/filter/firdes.h>
-#include <gnuradio/filter/fir_filter_ccf.h>
-#include <gnuradio/filter/fir_filter_ccf.h>
-
-#include <gnuradio/digital/fll_band_edge_cc.h>
-#include <gnuradio/digital/clock_recovery_mm_ff.h>
-#include <gnuradio/digital/binary_slicer_fb.h>
-#include <gnuradio/digital/correlate_access_code_tag_bb.h>
-
-
-
-#include <gnuradio/analog/pll_freqdet_cf.h>
-#include <gnuradio/analog/sig_source_f.h>
-#include <gnuradio/analog/sig_source_c.h>
 
 #include <gnuradio/blocks/vector_source_f.h>
  #include <gnuradio/blocks/null_sink.h>
  #include <gnuradio/blocks/throttle.h>
  #include <cstdlib>
  #include <ctime>
-#include "logging_receiver_dsd.h"
+#include "recorder.h"
 
-
- namespace po = boost::program_options;
 
  using namespace std;
 
- int thread_num=0;
-bool console  = false;
-
-
-
-
+ 
  time_t last_monkey;
- vector<log_dsd_sptr> loggers;
+ vector<recorder_sptr> loggers;
  unsigned int max_loggers = 6;
  unsigned int num_loggers = 0;
  unsigned int recording_num = 0;
- vector<log_dsd_sptr> active_loggers;
-
+ 
 gr::top_block_sptr tb;
 gr::blocks::vector_source_f::sptr src;
 gr::blocks::throttle::sptr throttle;
 gr::blocks::null_sink::sptr null_sink;
 
-
-
- volatile sig_atomic_t exit_flag = 0;
-
-
-
-
-
+volatile sig_atomic_t exit_flag = 0;
 
 void exit_interupt(int sig){ // can be called asynchronously
   exit_flag = 1; // set flag
@@ -129,7 +90,7 @@ void init_loggers(long samp_rate) {
 
 // static loggers
 	for (int i = 0; i < max_loggers; i++) {
-		log_dsd_sptr log = make_log_dsd( samp_rate, i);
+		recorder_sptr log = make_recorder( samp_rate, i);
 
 		loggers.push_back(log);
 		tb->connect(throttle, 0, log, 0);
@@ -138,18 +99,6 @@ void init_loggers(long samp_rate) {
 
 }
 
-void start_loggers() {
-for(vector<log_dsd_sptr>::iterator it = loggers.begin(); it != loggers.end();it++) {
-				log_dsd_sptr rx = *it;
-				if (!rx->is_active())
-				{
-					num_loggers++;
-					recording_num++;
-					rx->activate(recording_num);
-				}
-			}
-
-}
 
 void monkey(){ //const boost::system::error_code&) {
 	int logger_num = rand() % max_loggers;
@@ -169,13 +118,10 @@ int main(int argc, char **argv)
 
 	std::string device_addr;
 	double  samp_rate=32000;
-    //setup the program options
-
 
 	signal(SIGINT, exit_interupt);
 
-
-    tb = gr::make_top_block("Smartnet");
+    tb = gr::make_top_block("Main");
 
     vector<float> floatVector;
 	srand((unsigned)time(NULL));
@@ -193,21 +139,15 @@ int main(int argc, char **argv)
 	tb->connect(throttle,0,null_sink,0);
 
 	init_loggers(samp_rate);
-	start_loggers();
+
 	last_monkey = time(NULL);
 
 	tb->start();
 
-	/*
-	boost::asio::io_service io;
 
-  boost::asio::deadline_timer t(io, boost::posix_time::seconds(5));
-  t.async_wait(&monkey);
-
-  io.run();*/
 
 	while (1) {
-		if(exit_flag){ // my action when signal set it 1
+		if(exit_flag){ 
 			printf("\n Signal caught!\n");
 			tb->stop();
 			return 0;

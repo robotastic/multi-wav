@@ -17,22 +17,7 @@
 
 #include <gnuradio/io_signature.h>
 #include <gnuradio/hier_block2.h>
-#include <gnuradio/blocks/multiply_const_ff.h>
-#include <gnuradio/filter/firdes.h>
-#include <gnuradio/filter/fir_filter_ccf.h>
-#include <gnuradio/filter/fir_filter_fff.h>
-#include <gnuradio/filter/freq_xlating_fir_filter_ccf.h>
-#include <gnuradio/filter/firdes.h>
-#include <gnuradio/filter/rational_resampler_base_ccc.h>
-#include <gnuradio/analog/quadrature_demod_cf.h>
-#include <gnuradio/analog/quadrature_demod_cf.h>
 
-#include <gnuradio/analog/sig_source_f.h>
-#include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/blocks/multiply_cc.h>
-#include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/filter/rational_resampler_base_ccf.h>
-#include <gnuradio/filter/rational_resampler_base_fff.h>
 #include <gnuradio/block.h>
 #include <gnuradio/blocks/null_sink.h>
 
@@ -41,23 +26,22 @@
 #include <gnuradio/blocks/wavfile_sink.h>
 #include <gnuradio/blocks/file_sink.h>
 
-#include "smartnet.h"
 
 
-class log_dsd;
+class recorder;
 
-typedef boost::shared_ptr<log_dsd> log_dsd_sptr;
+typedef boost::shared_ptr<recorder> recorder_sptr;
 
-log_dsd_sptr make_log_dsd( long s,  int n);
+recorder_sptr make_recorder( long s,  int n);
 
-class log_dsd : public gr::hier_block2
+class recorder : public gr::hier_block2
 {
-  friend log_dsd_sptr make_log_dsd( long s, int n);
+  friend recorder_sptr make_recorder( long s, int n);
 protected:
-    log_dsd(long s,  int n);
+    recorder(long s,  int n);
 
 public:
-    ~log_dsd();
+    ~recorder();
 	void tune_offset(float f);
 	void activate( int num);
 

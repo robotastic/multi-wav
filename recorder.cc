@@ -1,27 +1,26 @@
 
-#include "logging_receiver_dsd.h"
+#include "recorder.h"
 using namespace std;
 
-bool log_dsd::logging = false;
+bool recorder::logging = false;
 
-log_dsd_sptr make_log_dsd(long s,  int n)
+recorder_sptr make_recorder(long s,  int n)
 {
-    return gnuradio::get_initial_sptr(new log_dsd(s, n));
+    return gnuradio::get_initial_sptr(new recorder(s, n));
 }
 
 
-log_dsd::log_dsd( long s,  int n)
-    : gr::hier_block2 ("log_dsd",
+recorder::recorder( long s,  int n)
+    : gr::hier_block2 ("recorder",
           gr::io_signature::make  (1, 1, sizeof(float)),
           gr::io_signature::make  (0, 0, sizeof(float)))
 {
 	samp_rate = s;
 	num = n;
-	active = false;
+	active = true;
 
 	timestamp = time(NULL);
 	starttime = time(NULL);
-
 
 	std::stringstream path_stream;
 	path_stream << boost::filesystem::current_path().string() <<  "/recordings";
@@ -34,34 +33,34 @@ log_dsd::log_dsd( long s,  int n)
 	sprintf(raw_filename, "%s/%d-0.raw", path_stream.str().c_str(),num);
 	raw_sink = gr::blocks::file_sink::make(sizeof(float), raw_filename);
 
-	connect(self(),0, null_sink,0);
+	connect(self(),0, wav_sink,0);
+	connect(self(),0, raw_sink,0);
 }
 
-log_dsd::~log_dsd() {
+recorder::~recorder() {
 
 }
-// from: /gnuradio/grc/grc_gnuradio/blks2/selector.py
 
-bool log_dsd::is_active() {
+bool recorder::is_active() {
 	return active;
 }
 
 
-char *log_dsd::get_filename() {
+char *recorder::get_filename() {
 	return filename;
 }
 
-int log_dsd::lastupdate() {
+int recorder::lastupdate() {
 	return time(NULL) - timestamp;
 }
 
-long log_dsd::elapsed() {
+long recorder::elapsed() {
 	return time(NULL) - starttime;
 }
 
 
-void log_dsd::deactivate() {
-	std::cout<< "logging_receiver_dsd.cc: Deactivating Logger [ " << num << " ] " << std::endl; 
+void recorder::deactivate() {
+	std::cout<< "Deactivating Logger [ " << num << " ] " << std::endl; 
 
 	active = false;
 
@@ -71,32 +70,28 @@ void log_dsd::deactivate() {
 	wav_sink->close();
 	raw_sink->close();
 
-	
-
 	disconnect(self(),0, wav_sink,0);
 	disconnect(self(),0, raw_sink,0);
 	connect(self(),0, null_sink,0);
 
-
 	unlock();
-
-  
 }
 
-void log_dsd::activate(int n) {
+
+void recorder::activate(int n) {
 
 	timestamp = time(NULL);
 	starttime = time(NULL);
 
 
-  	std::cout<< "logging_receiver_dsd.cc: Activating Logger [ " << num << " ]  "  <<std::endl;
+  	std::cout<< "Activating Logger [ " << num << " ]  "  <<std::endl;
+  	active = true;
 
 	std::stringstream path_stream;
 	path_stream << boost::filesystem::current_path().string() <<  "/recordings";
 
 	boost::filesystem::create_directories(path_stream.str());
 	sprintf(filename, "%s/%d-%d.wav", path_stream.str().c_str(),num,n);
-	
 	sprintf(raw_filename, "%s/%d-%d.raw", path_stream.str().c_str(),num,n);
  	lock();
 
@@ -110,6 +105,4 @@ void log_dsd::activate(int n) {
 
 	
 	unlock();
-	active = true;
-
 }
